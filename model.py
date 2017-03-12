@@ -4,6 +4,7 @@ from loadRatingData import loadRatingData
 from sklearn.ensemble import RandomForestClassifier
 import random
 import numpy as np
+import config as conf
 
 teams = loadTeamData()
 teamIds = loadReverseTeamLookup()
@@ -93,20 +94,26 @@ class Model:
 
     def predict(self, season, team1, team2):
         if season not in self.probabilities:
-            self.probabilities[season] = self.calculateMatchupProbabilities(season)
+            if season == conf.year:
+                self.probabilities[season] = self.calculateMatchupProbabilities(season, conf.all_teamids)
+            else:
+                self.probabilities[season] = self.calculateMatchupProbabilities(season)
         teamid1 = teamIds[team1]
         teamid2 = teamIds[team2]
         return self.probabilities[season][(teamid1, teamid2)]
         # X = np.asarray(compareTeamStats(season, teamid1, teamid2)).reshape(1,-1)
         # return self.forest.predict_proba(X)[0][1]
 
-    def calculateMatchupProbabilities(self, season):
+    def calculateMatchupProbabilities(self, season, teams=None):
         print "calculating matchup probabilities"
         probs = {}
         features = []
         indices = []
-        for teamid1 in ratings[season]:
-            for teamid2 in ratings[season]:
+        tournamentTeams = ratings[season]
+        if teams is not None:
+            tournamentTeams = teams
+        for teamid1 in tournamentTeams:
+            for teamid2 in tournamentTeams:
                 if teamid1 != teamid2:
                     comparison = compareTeamStats(season, teamid1, teamid2)
                     features.append(comparison)

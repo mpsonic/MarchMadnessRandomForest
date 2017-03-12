@@ -3,6 +3,7 @@ from loadTeamData import loadReverseTeamLookup
 teamIds = loadReverseTeamLookup()
 teams = {}
 
+year = 2017
 # 2016 bracket teams
 teams['west'] = ['Oregon', 'Holy Cross', 'St Joseph\'s PA', 'Cincinnati',
                 'Baylor', 'Yale', 'Duke', 'UNC Wilmington',
@@ -21,8 +22,11 @@ teams['midwest'] = ['Virginia', 'Hampton', 'Texas Tech', 'Butler',
                     'Seton Hall', 'Gonzaga', 'Utah', 'Fresno St',
                     'Dayton', 'Syracuse', 'Michigan St', 'Tennessee']
 
+all_teams = teams['west'] + teams['east'] + teams['south'] + teams['midwest']
 _rankings = [1,16,8,9,5,12,4,13,6,11,3,14,7,10,2,15]
+all_teamids = []
 regional_rankings = {}
+
 for region in teams:
     for (team, rank) in zip(teams[region], _rankings):
         teamId = teamIds[team]
@@ -32,3 +36,5 @@ regions = {}
 for region in teams:
     for team in teams[region]:
         regions[team] = region
+        teamId = teamIds[team]
+        all_teamids.append(teamId)
