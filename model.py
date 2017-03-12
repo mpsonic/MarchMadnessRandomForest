@@ -1,4 +1,4 @@
-from loadTeamData import loadTeamData
+from loadTeamData import loadTeamData, loadReverseTeamLookup
 from loadTourneyData import loadTourneyData
 from loadRatingData import loadRatingData
 from sklearn.ensemble import RandomForestClassifier
@@ -6,9 +6,13 @@ import random
 import numpy as np
 
 teams = loadTeamData()
+teamIds = loadReverseTeamLookup()
 tourneyResults = loadTourneyData()
+# for key in tourneyResults:
+#     print key
+
 ratings = {}
-for i in range(2013, 2018):
+for i in range(2013, 2017):
     ratings[i] = loadRatingData(i);
 
 def compareTeamStats(season, teamid1, teamid2):
@@ -51,21 +55,70 @@ def test2017data():
         teamIds.append(teamid)
     return compareTeamStats(2013, teamIds[0], teamIds[1])
 
-def trainModel(season):
+def trainForest(season, ntrees):
     data = prepareTrainingData(season)
-    randomForest = RandomForestClassifier(n_estimators=200, n_jobs=2)
+    randomForest = RandomForestClassifier(n_estimators=ntrees, n_jobs=2)
     randomForest.fit(data["features"], data["targets"])
-    return randomForest
+    return { "forest":randomForest, "data": data }
 
-def testModel(rfModel, season):
+def testForest(rfModel, season):
     data = prepareTrainingData(season)
     return rfModel.score(data["features"], data["targets"])
 
-if __name__ == "__main__":
-    print "training model"
-    rf = trainModel(2013)
-    print testModel(rf, 2014)
-    print rf.feature_importances_
-    # X = test2017data()
-    # X = np.asarray(X).reshape(1, -1)
-    # print(rf.predict_proba(X))
+
+def buildModel(ntrees):
+    print ("building model...")
+    forests = []
+    for season in range(2013, 2016):
+        print season
+        if season != 2017:
+            trainResult = trainForest(season, ntrees)
+            forest = {"season": season, "forest": trainResult["forest"], "data": trainResult["data"]}
+            forests.append(forest)
+    return Model(forests)
+
+
+class Model:
+    def __init__(self, randomForestArray):
+        self.forests = randomForestArray
+
+    def predict(self, season, team1, team2):
+        teamid1 = teamIds[team1]
+        teamid2 = teamIds[team2]
+        X = np.asarray(compareTeamStats(season, teamid1, teamid2)).reshape(1,-1)
+        s = 0
+        count = 0
+        for forest in self.forests:
+            if forest["season"] != season:
+                s += forest["forest"].predict_proba(X)[0][1]
+                count += 1
+        return s/count
+
+    def validate(self):
+        t = 0
+        for forest1 in self.forests:
+            season1 = forest1["season"]
+            s = 0
+            c = 0
+            for forest2 in self.forests:
+                if season1 != forest2["season"]:
+                    season2Data = forest2["data"];
+                    s += forest1["forest"].score(season2Data["features"], season2Data["targets"])
+                    c += 1
+            print ("Validating season %s: %f" % (season1, s/c))
+            t += s/c
+        return t/len(self.forests)
+
+
+# if __name__ == "__main__":
+#     print "building model"
+#     nTreesTests = [10, 25, 50, 100, 200, 400, 800]
+#     bestModel = { "score": 0, "nTrees": 0, "model": None}
+#     for nTrees in nTreesTests:
+#         model = buildModel(nTrees)
+#         modelScore = model.validate()
+#         if bestModel["score"] < modelScore:
+#             bestModel = {"score": modelScore, "nTrees": nTrees, "model": model}
+#     print ("Best performing model:")
+#     print ("Validation Score: %s" % bestModel["score"])
+#     print ("NTrees: %d" % bestModel["nTrees"])
