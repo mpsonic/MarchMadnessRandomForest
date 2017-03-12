@@ -4,11 +4,11 @@ import model as Model
 from loadTeamData import loadTeamData
 
 def runTournamentBracket(model=None):
-    year = 2016
+    year = 2017
     if model is None:
         model = Model.buildModel(200);
 
-    print ("Running Tournament")
+    # print ("Running Tournament")
     west = Bracket.runbracket(year, conf.teams['west'], model)
     east = Bracket.runbracket(year, conf.teams['east'], model)
     south = Bracket.runbracket(year, conf.teams['south'], model)
@@ -37,6 +37,7 @@ def calculatePredictionStats(iterations):
     teams = loadTeamData()
 
     for i in range(0, iterations):
+        # print ("Running Tournament %d" % (i + 1))
         results = runTournamentBracket(model)
         westChamp = results['west'][4][0]
         eastChamp = results['east'][4][0]
@@ -64,11 +65,11 @@ def calculatePredictionStats(iterations):
         else:
             championCounts[champ] += 1
 
-    westProbs = [{'team': key, 'prob': westCounts[key]/iterations} for key in westCounts]
-    eastProbs = [{'team': key, 'prob': eastCounts[key]/iterations} for key in eastCounts]
-    southProbs = [{'team': key, 'prob': southCounts[key]/iterations} for key in southCounts]
-    midwestProbs = [{'team': key, 'prob': midwestCounts[key]/iterations} for key in midwestCounts]
-    champProbs = [{'team': key, 'prob': championCounts[key]/iterations} for key in championCounts]
+    westProbs = [{'team': key, 'prob': westCounts[key]/float(iterations)} for key in westCounts]
+    eastProbs = [{'team': key, 'prob': eastCounts[key]/float(iterations)} for key in eastCounts]
+    southProbs = [{'team': key, 'prob': southCounts[key]/float(iterations)} for key in southCounts]
+    midwestProbs = [{'team': key, 'prob': midwestCounts[key]/float(iterations)} for key in midwestCounts]
+    champProbs = [{'team': key, 'prob': championCounts[key]/float(iterations)} for key in championCounts]
 
     printTeamProbs("West Champion Probabilities", westProbs)
     printTeamProbs("East Champion Probabilities", eastProbs)
@@ -79,7 +80,7 @@ def calculatePredictionStats(iterations):
 def printTeamProbs(title, probs):
     def getKey(prob):
         return prob['prob']
-    sortedProbs = sorted(probs, key=getKey)
+    sortedProbs = sorted(probs, key=getKey, reverse=True)
 
     print(title)
     for data in sortedProbs:

@@ -16,20 +16,23 @@ columns = {
 def loadRatingData(season):
     ratings = {}
     teamIds = loadReverseTeamLookup()
-    fileName = "data/massey-ratings-%s.tsv" % season
+    fileName = "data/ratings/massey-ratings-%s.tsv" % season
     with open(fileName) as tsv:
         ratingFile = csv.reader(tsv, delimiter="\t")
         ratingFile.next()
         for line in ratingFile:
-            if len(line) == 17:
+            if len(line) >= 17:
                 teamRatings = {}
                 for key, desc in columns.iteritems():
                     if desc["type"] == "float":
                         teamRatings[key] = float(line[desc["idx"]])
                     else:
                         teamRatings[key] = line[desc["idx"]]
-                teamId = teamIds[teamRatings["teamName"]]
-                if teamId is None:
-                    raise Error("no id for team name %s" % teamRatings["teamName"])
-                ratings[teamId] = teamRatings
+                name = teamRatings["teamName"]
+                if name in teamIds:
+                    teamId = teamIds[teamRatings["teamName"]]
+                    ratings[teamId] = teamRatings
     return ratings
+
+if __name__ == "__main__":
+    loadRatingData(2017)

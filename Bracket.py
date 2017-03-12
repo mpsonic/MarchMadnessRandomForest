@@ -1,6 +1,8 @@
 import numpy as np
 import config as conf
 import random
+from loadTeamData import loadReverseTeamLookup
+teamIds = loadReverseTeamLookup()
 
 # Get pairs of teams. taken and adapted from Daniel-B-Smith/MarchMadnessMonteCarlo
 from itertools import izip_longest
@@ -22,7 +24,7 @@ def playgame(season, team1, team2, model):
 
 # taken and adapted from Daniel-B-Smith/MarchMadnessMonteCarlo on Github
 def playround(season, teams, model):
-    print("Playing Round")
+    # print("Playing Round")
     winners = []
     losers = []
     for (team1, team2) in pairs(teams):
@@ -33,7 +35,7 @@ def playround(season, teams, model):
 
 # taken and adapted from Daniel-B-Smith/MarchMadnessMonteCarlo on Github
 def runbracket(season, teams, model):
-    print("Running Bracket")
+    # print("Running Bracket")
     # How many rounds do we need?
     rounds = []
     nRounds = int(np.log2(len(teams)))
@@ -73,16 +75,19 @@ def bracket_to_string(bracket):
             results[i][idx] = team
             idx += 2**i
 
-    def tr(i,include_rank=False,maxlen=None):
+    def tr(teamName,include_rank=False,maxlen=None):
         """ Print out the team and ranking """
+        result = ''
         if maxlen is not None:
-            team = i[:maxlen]
+            team = teamName[:maxlen]
         else:
-            team = i
+            team = teamName
         if include_rank:
             try:
-                region = conf.regions[i]
-                result = '%s (%s)'%(team,int(conf.regional_rankings[i]))
+                if teamName in teamIds:
+                    teamid = teamIds[teamName]
+                    region = conf.regions[i]
+                    result = '%s (%s)'%(team,int(conf.regional_rankings[teamid]))
             except KeyError:
                 result = '%s'%(team)
         return result

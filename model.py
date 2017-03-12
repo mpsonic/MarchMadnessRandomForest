@@ -12,7 +12,7 @@ tourneyResults = loadTourneyData()
 #     print key
 
 ratings = {}
-for i in range(2013, 2017):
+for i in range(2000, 2018):
     ratings[i] = loadRatingData(i);
 
 def compareTeamStats(season, teamid1, teamid2):
@@ -32,20 +32,35 @@ def compareTeamStats(season, teamid1, teamid2):
     }
     return comparison.values()
 
-def prepareTrainingData(season):
+def prepareTrainingData(season=None):
     features = []
     targets = []
-    for game in tourneyResults[season]:
-        teamidW = game["Wteam"]
-        teamidL = game["Lteam"]
-        comparison = []
-        if (random.random() > 0.5):
-            comparison = compareTeamStats(season, teamidW, teamidL)
-            targets.append("W")
-        else:
-            comparison = compareTeamStats(season, teamidL, teamidW)
-            targets.append("L")
-        features.append(comparison)
+    if season is not None:
+        for game in tourneyResults[season]:
+            teamidW = game["Wteam"]
+            teamidL = game["Lteam"]
+            comparison = []
+            if (random.random() > 0.5):
+                comparison = compareTeamStats(season, teamidW, teamidL)
+                targets.append("W")
+            else:
+                comparison = compareTeamStats(season, teamidL, teamidW)
+                targets.append("L")
+            features.append(comparison)
+    else:
+        for season in ratings:
+            if season < 2016:
+                for game in tourneyResults[season]:
+                    teamidW = game["Wteam"]
+                    teamidL = game["Lteam"]
+                    comparison = []
+                    if (random.random() > 0.5):
+                        comparison = compareTeamStats(season, teamidW, teamidL)
+                        targets.append("W")
+                    else:
+                        comparison = compareTeamStats(season, teamidL, teamidW)
+                        targets.append("L")
+                    features.append(comparison)
     return {"features": features, "targets": targets}
 
 def test2017data():
@@ -55,59 +70,54 @@ def test2017data():
         teamIds.append(teamid)
     return compareTeamStats(2013, teamIds[0], teamIds[1])
 
-def trainForest(season, ntrees):
-    data = prepareTrainingData(season)
+def trainForest(ntrees, season=None):
+    data = prepareTrainingData(season=season)
     randomForest = RandomForestClassifier(n_estimators=ntrees, n_jobs=2)
     randomForest.fit(data["features"], data["targets"])
     return { "forest":randomForest, "data": data }
 
 def testForest(rfModel, season):
-    data = prepareTrainingData(season)
+    data = prepareTrainingData(season=season)
     return rfModel.score(data["features"], data["targets"])
 
 
 def buildModel(ntrees):
     print ("building model...")
-    forests = []
-    for season in range(2013, 2016):
-        print season
-        if season != 2017:
-            trainResult = trainForest(season, ntrees)
-            forest = {"season": season, "forest": trainResult["forest"], "data": trainResult["data"]}
-            forests.append(forest)
-    return Model(forests)
+    return Model(trainForest(ntrees)["forest"])
 
 
 class Model:
-    def __init__(self, randomForestArray):
-        self.forests = randomForestArray
+    def __init__(self, randomForest):
+        self.forest = randomForest
+        self.probabilities = {}
 
     def predict(self, season, team1, team2):
+        if season not in self.probabilities:
+            self.probabilities[season] = self.calculateMatchupProbabilities(season)
         teamid1 = teamIds[team1]
         teamid2 = teamIds[team2]
-        X = np.asarray(compareTeamStats(season, teamid1, teamid2)).reshape(1,-1)
-        s = 0
-        count = 0
-        for forest in self.forests:
-            if forest["season"] != season:
-                s += forest["forest"].predict_proba(X)[0][1]
-                count += 1
-        return s/count
+        return self.probabilities[season][(teamid1, teamid2)]
+        # X = np.asarray(compareTeamStats(season, teamid1, teamid2)).reshape(1,-1)
+        # return self.forest.predict_proba(X)[0][1]
 
-    def validate(self):
-        t = 0
-        for forest1 in self.forests:
-            season1 = forest1["season"]
-            s = 0
-            c = 0
-            for forest2 in self.forests:
-                if season1 != forest2["season"]:
-                    season2Data = forest2["data"];
-                    s += forest1["forest"].score(season2Data["features"], season2Data["targets"])
-                    c += 1
-            print ("Validating season %s: %f" % (season1, s/c))
-            t += s/c
-        return t/len(self.forests)
+    def calculateMatchupProbabilities(self, season):
+        print "calculating matchup probabilities"
+        probs = {}
+        features = []
+        indices = []
+        for teamid1 in ratings[season]:
+            for teamid2 in ratings[season]:
+                if teamid1 != teamid2:
+                    comparison = compareTeamStats(season, teamid1, teamid2)
+                    features.append(comparison)
+                    indices.append((teamid1, teamid2))
+        rawProbs = self.forest.predict_proba(features)
+        for i in xrange(len(rawProbs)):
+            probs[indices[i]] = rawProbs[i][1]
+        return probs
+
+
+
 
 
 # if __name__ == "__main__":
