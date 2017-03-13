@@ -1,34 +1,36 @@
-This is a March Madness bracket simulator that uses machine learning to predict game outcomes
+# Usage:
+    python mm.py [options]
 
-Usage: mm.py [options]
+# Options:
 
-Options:
-  -h, --help            show help message and exit
-  -s, --stats           Calculate tournament outcome probabilities through
+    -h, --help            show help message and exit
+    -s, --stats           Calculate tournament outcome probabilities through
                         simulation (most likely final four, champion)
-  -b, --bracket         Simulate a tournament bracket and print results
-  -w WINNER, --winner=WINNER
+    -b, --bracket         Simulate a tournament bracket and print results
+    -w WINNER, --winner=WINNER
                         Find a tournament bracket with the given team as
                         champion. Only use this flag in conjunction with the
                         --bracket option
-  -p PREDICT, --predict=PREDICT
+    -p PREDICT, --predict=PREDICT
                         Find the probability that one team wins over the
                         other. Put the two team names after the flag
-  -m NMODELS, --models=NMODELS
+    -m NMODELS, --models=NMODELS
                         Number of random forests to create when calculating
                         matchup probabilities
-  -t NTREES, --trees=NTREES
+    -t NTREES, --trees=NTREES
                         Number of decision trees generated in each random
                         forest
-  --load                Load model matchup probabilities from file (precalculated
+    --load                Load model matchup probabilities from file (precalculated
                         and saved using --save)
-  --save                Save the calculated matchup probabilities to a file
+    --save                Save the calculated matchup probabilities to a file
 
-Methods:
+# Methods:
   The idea is to use machine learning to predict the outcome of each game in the
-  tournament. For training data, I decided to use Massey Ratings' college
+  tournament. For training data, I decided to use
+  [Massey Ratings'](http://www.masseyratings.com/cb/ncaa-d1/ratings) college
   basketball ratings from 2000 to the present. I also fetched the March Madness
-  tournament outcomes since 2000 from harvitronix's kaggle-march-madness-2016
+  tournament outcomes since 2000 from harvitronix's
+  [kaggle-march-madness-2016](https://github.com/harvitronix/kaggle-march-madness-2016)
   repository on Github.
 
   Using this data, the script trains many random forest classifiers to predict
@@ -38,26 +40,32 @@ Methods:
   bracket simulations.
 
 
-Configuration:
+# Configuration:
   In order to reuse this code for future March Madness tournaments, you'll need
-  to get the new basketball ratings from www.masseyratings.com and change
-  config.py: Change the "year" variable to the current year and enter the correct
+  to get the new basketball ratings from
+  [Massey Ratings](http://www.masseyratings.com/cb/ncaa-d1/ratings) and change
+  config.py:  Change the "year" variable to the current year and enter the correct
   team names at their respective seed positions for each bracket region. Team names
   need to match the team names found in data/Teams.csv.
 
-Sources/Inspirations:
-  Thanks to Massey Ratings for providing great team rankings! I consulted
-  havtronix's kaggle-march-madness-2016 repository for some machine-learning
-  inspiration. I also re-used some code from Daniel-B-Smith's
-  MarchMadnessMonteCarlo project on Github for simulating and printing tournament
-  brackets.
 
-Example Output:
-  Predict the outcome of a game
+# Sources/Inspirations:
+  Thanks to [Massey Ratings](http://www.masseyratings.com/cb/ncaa-d1/ratings)
+  for providing great team rankings! I consulted havtronix's
+  [kaggle-march-madness-2016](https://github.com/harvitronix/kaggle-march-madness-2016)
+  repository for some machine-learning inspiration. I also re-used some code from Daniel-B-Smith's
+  [MarchMadnessMonteCarlo](https://github.com/Daniel-B-Smith/MarchMadnessMonteCarlo) project
+  on Github for simulating and printing tournament brackets.
+
+
+# Example Output:
+### Predict the outcome of a game
+
     python mm.py --load -p "Iowa St" Nevada
     Iowa St wins with probability of 0.928885%
 
-  Generate a bracket with Minnesota as the winner:
+### Generate a bracket with Minnesota as the winner:
+
     python mm.py --load -b -w Minnesota
     East:
     Villanova
@@ -141,7 +149,8 @@ Example Output:
     Minnesota                 Min (5)  Min (5)
     Kansas
 
-  Generate tournament outcome statistics:
+### Generate tournament outcome statistics:
+
     python mm.py --load -s
     West Champion Probabilities
     Gonzaga: 0.677970
