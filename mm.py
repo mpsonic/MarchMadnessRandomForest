@@ -4,27 +4,30 @@ import model as Model
 
 parser = optparse.OptionParser()
 parser.add_option("-s", "--stats", dest="calcStats",
-                    help="Calculate tournament outcome probabilities through simulation",
+                    help="Calculate tournament outcome probabilities through"
+                    " simulation (most likely final four, champion)",
                     action="store_true", default=False)
 parser.add_option("-b", "--bracket", dest="makeBracket",
                     help="Simulate a tournament bracket and print results",
                     action="store_true", default=False)
 parser.add_option("-w", "--winner", dest="winner",
                     help="Find a tournament bracket with the given team as champion."
-                    " Only use this flag in conjunction with the --bracket command",
+                    " Only use this flag in conjunction with the --bracket option",
                     action="store", default=False)
 parser.add_option("-p", "--predict", dest="predict",
                     help="Find the probability that one team wins over the other."
-                    "Put the two team names after the flag",
+                    " Put the two team names after the flag",
                     action="store", type="string", nargs=2, default=False)
 parser.add_option("-m", "--models", dest="nModels",
-                    help="Number of random forests to create when calculating matchup probabilities",
-                    action="store", type="int", default=200)
+                    help="Number of random forests to create when calculating "
+                    "matchup probabilities", action="store", type="int",
+                    default=200)
 parser.add_option("-t", "--trees", dest="nTrees",
                     help="Number of decision trees generated in each random forest",
                     action="store", type="int", default=200)
 parser.add_option("--load", dest="load",
-                    help="Load model matchup probabilities from file (speeds up predictions)",
+                    help="Load model matchup probabilities from file "
+                    "(precalculated and saved using --save)",
                     action="store_true", default=False)
 parser.add_option("--save", dest="save",
                     help="Save the calculated matchup probabilities to a file",
