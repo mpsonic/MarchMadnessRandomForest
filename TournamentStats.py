@@ -9,12 +9,12 @@ def runTournamentBracket(model=None):
         model = Model.buildModel(200);
 
     # print ("Running Tournament")
-    west = Bracket.runbracket(year, conf.teams['west'], model)
-    east = Bracket.runbracket(year, conf.teams['east'], model)
-    south = Bracket.runbracket(year, conf.teams['south'], model)
-    midwest = Bracket.runbracket(year, conf.teams['midwest'], model)
+    west = Bracket.runbracket(conf.teams['west'], model)
+    east = Bracket.runbracket(conf.teams['east'], model)
+    south = Bracket.runbracket(conf.teams['south'], model)
+    midwest = Bracket.runbracket(conf.teams['midwest'], model)
     final4teams = [west[4][0], east[4][0], south[4][0], midwest[4][0]]
-    final4 = Bracket.runbracket(year, final4teams, model)
+    final4 = Bracket.runbracket(final4teams, model)
     champion = final4[2][0]
     return {
         'year': 2016,
@@ -26,45 +26,42 @@ def runTournamentBracket(model=None):
         'champion': champion
     }
 
-def calculatePredictionStats(iterations, numModels):
+def calculatePredictionStats(model, iterations):
     # find list of most likely final 4 (for each region), most likely champion
     westCounts = {}
     eastCounts = {}
     southCounts = {}
     midwestCounts = {}
     championCounts = {}
-    itPerModel = iterations / numModels
     teams = loadTeamData()
-    for m in range(0, numModels):
-        model = Model.buildModel(1000)
-        for i in range(0, itPerModel):
-            # print ("Running Tournament %d" % (i + 1))
-            results = runTournamentBracket(model)
-            westChamp = results['west'][4][0]
-            eastChamp = results['east'][4][0]
-            southChamp = results['south'][4][0]
-            midwestChamp = results['midwest'][4][0]
-            champ = results['champion']
-            if westChamp not in westCounts:
-                westCounts[westChamp] = 1
-            else:
-                westCounts[westChamp] += 1
-            if eastChamp not in eastCounts:
-                eastCounts[eastChamp] = 1
-            else:
-                eastCounts[eastChamp] += 1
-            if southChamp not in southCounts:
-                southCounts[southChamp] = 1
-            else:
-                southCounts[southChamp] += 1
-            if midwestChamp not in midwestCounts:
-                midwestCounts[midwestChamp] = 1
-            else:
-                midwestCounts[midwestChamp] += 1
-            if champ not in championCounts:
-                championCounts[champ] = 1
-            else:
-                championCounts[champ] += 1
+    for i in range(0, iterations):
+        # print ("Running Tournament %d" % (i + 1))
+        results = runTournamentBracket(model)
+        westChamp = results['west'][4][0]
+        eastChamp = results['east'][4][0]
+        southChamp = results['south'][4][0]
+        midwestChamp = results['midwest'][4][0]
+        champ = results['champion']
+        if westChamp not in westCounts:
+            westCounts[westChamp] = 1
+        else:
+            westCounts[westChamp] += 1
+        if eastChamp not in eastCounts:
+            eastCounts[eastChamp] = 1
+        else:
+            eastCounts[eastChamp] += 1
+        if southChamp not in southCounts:
+            southCounts[southChamp] = 1
+        else:
+            southCounts[southChamp] += 1
+        if midwestChamp not in midwestCounts:
+            midwestCounts[midwestChamp] = 1
+        else:
+            midwestCounts[midwestChamp] += 1
+        if champ not in championCounts:
+            championCounts[champ] = 1
+        else:
+            championCounts[champ] += 1
 
     westProbs = [{'team': key, 'prob': westCounts[key]/float(iterations)} for key in westCounts]
     eastProbs = [{'team': key, 'prob': eastCounts[key]/float(iterations)} for key in eastCounts]
@@ -88,8 +85,7 @@ def printTeamProbs(title, probs):
         print ("%s: %f" % (data['team'], data['prob']))
     print "\n"
 
-def makeRandomBracket(nModelTrees):
-    model = Model.buildModel(nModelTrees)
+def makeRandomBracket(model):
     results = runTournamentBracket(model)
     printTournamentBracket(results)
 
@@ -104,3 +100,11 @@ def printTournamentBracket(bracket):
     print Bracket.bracket_to_string(bracket['midwest'])
     print "Final4:"
     print Bracket.bracket_to_string(bracket['final4'])
+
+def predict(model, team1, team2):
+    winProb = model.predict(team1, team2)
+    winner = team1
+    if (winProb < 0.5):
+        winner = team2
+        winProb = 1 - winProb
+    print ("%s wins with probability of %1f%%" % (winner, winProb))

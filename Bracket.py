@@ -15,26 +15,26 @@ def grouper(n, iterable, fillvalue=None):
 def pairs(iterable):
     return grouper(2,iterable)
 
-def playgame(season, team1, team2, model):
-    winProb = model.predict(season, team1, team2)
+def playgame(team1, team2, model):
+    winProb = model.predict(team1, team2)
     if (random.random() < winProb):
         return (team1, team2)
     else:
         return (team2, team1)
 
 # taken and adapted from Daniel-B-Smith/MarchMadnessMonteCarlo on Github
-def playround(season, teams, model):
+def playround(teams, model):
     # print("Playing Round")
     winners = []
     losers = []
     for (team1, team2) in pairs(teams):
-        winner, loser = playgame(season, team1, team2, model)
+        winner, loser = playgame(team1, team2, model)
         winners.append(winner)
         losers.append(loser)
     return winners,losers
 
 # taken and adapted from Daniel-B-Smith/MarchMadnessMonteCarlo on Github
-def runbracket(season, teams, model):
+def runbracket(teams, model):
     # print("Running Bracket")
     # How many rounds do we need?
     rounds = []
@@ -42,7 +42,7 @@ def runbracket(season, teams, model):
     winners = teams #they won to get here!
     rounds.append(winners)
     for round in xrange(nRounds):
-        winners, losers = playround(season, winners, model)
+        winners, losers = playround(winners, model)
         rounds.append(winners)
     return rounds
 
