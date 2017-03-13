@@ -85,19 +85,27 @@ def printTeamProbs(title, probs):
         print ("%s: %f" % (data['team'], data['prob']))
     print "\n"
 
-def makeRandomBracket(model):
-    results = runTournamentBracket(model)
+def makeRandomBracket(model, winner=None):
+    results = None
+    if winner is None:
+        results = runTournamentBracket(model)
+    else:
+        foundWinner = False
+        while not foundWinner:
+            results = runTournamentBracket(model)
+            if results["champion"] == winner:
+                foundWinner = True
     printTournamentBracket(results)
 
 def printTournamentBracket(bracket):
-    print "West:"
-    print Bracket.bracket_to_string(bracket['west'])
     print "East:"
     print Bracket.bracket_to_string(bracket['east'])
-    print "South:"
-    print Bracket.bracket_to_string(bracket['south'])
     print "Midwest:"
     print Bracket.bracket_to_string(bracket['midwest'])
+    print "West:"
+    print Bracket.bracket_to_string(bracket['west'])
+    print "South:"
+    print Bracket.bracket_to_string(bracket['south'])
     print "Final4:"
     print Bracket.bracket_to_string(bracket['final4'])
 

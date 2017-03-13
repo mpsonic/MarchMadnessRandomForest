@@ -9,6 +9,10 @@ parser.add_option("-s", "--stats", dest="calcStats",
 parser.add_option("-b", "--bracket", dest="makeBracket",
                     help="Simulate a tournament bracket and print results",
                     action="store_true", default=False)
+parser.add_option("-w", "--winner", dest="winner",
+                    help="Find a tournament bracket with the given team as champion."
+                    " Only use this flag in conjunction with the --bracket command",
+                    action="store", default=False)
 parser.add_option("-p", "--predict", dest="predict",
                     help="Find the probability that one team wins over the other."
                     "Put the two team names after the flag",
@@ -41,7 +45,10 @@ else:
 if options.calcStats:
     TournamentStats.calculatePredictionStats(model, 100000)
 elif options.makeBracket:
-    TournamentStats.makeRandomBracket(model)
+    if options.winner:
+        TournamentStats.makeRandomBracket(model, options.winner)
+    else:
+        TournamentStats.makeRandomBracket(model)
 elif options.predict:
     team1 = options.predict[0]
     team2 = options.predict[1]
