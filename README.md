@@ -66,7 +66,7 @@
     python mm.py --load -p "Iowa St" Nevada
     Iowa St wins with probability of 0.928885%
 
-### Generate a bracket with Minnesota as the winner:
+### Generate a bracket with your favorite team as the winner:
 
     python mm.py --load -b -w Minnesota
     East:
