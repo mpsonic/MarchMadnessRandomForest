@@ -3,6 +3,7 @@ from loadTourneyData import loadTourneyData
 from loadRatingData import loadRatingData
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
+from sklearn.model_selection import train_test_split
 import random
 import ast
 import numpy as np
@@ -18,6 +19,11 @@ ratings = {}
 for i in range(2000, 2018):
     ratings[i] = loadRatingData(i);
 
+# Build a training data sample from the ratings of both teams from the given season.
+# This comparison should act as a predictor for the outcome of a match between
+# the two teams. The final model is trained to predict the outcome of past
+# tournament games using these comparisons. Perhaps more data / better combinations
+# could be added?
 def compareTeamStats(season, teamid1, teamid2):
     # print ("team1: %s, team2: %s" % (teamid1, teamid2))
     r1 = ratings[season][teamid1]
@@ -35,6 +41,7 @@ def compareTeamStats(season, teamid1, teamid2):
     }
     return comparison.values()
 
+# Collect the necessary data so that a RandomForest can be trained
 def prepareTrainingData(season=None):
     features = []
     targets = []
@@ -66,13 +73,6 @@ def prepareTrainingData(season=None):
                     features.append(comparison)
     return {"features": features, "targets": targets}
 
-def test2017data():
-    r = ratings[2013]
-    teamIds = []
-    for teamid in r:
-        teamIds.append(teamid)
-    return compareTeamStats(2013, teamIds[0], teamIds[1])
-
 def trainForest(ntrees, season=None):
     data = prepareTrainingData(season=season)
     randomForest = RandomForestClassifier(n_estimators=ntrees, n_jobs=2)
@@ -83,7 +83,7 @@ def testForest(rfModel, season):
     data = prepareTrainingData(season=season)
     return rfModel.score(data["features"], data["targets"])
 
-
+# Train multiple RandomForests and calculate matchup probabilities with them
 def buildModel(nForests=20, nTrees=200, save=False, load=False):
     # print ("building model...")
     if load:
@@ -98,7 +98,6 @@ def buildModel(nForests=20, nTrees=200, save=False, load=False):
         probFile.write(str(matchProbs))
     return Model(matchProbs)
 
-
 class Model:
     def __init__(self, matchupProbabilities):
         self.probabilities = matchupProbabilities
@@ -111,7 +110,6 @@ class Model:
         return (winPct1 + winPct2) / 2
         # X = np.asarray(compareTeamStats(season, teamid1, teamid2)).reshape(1,-1)
         # return self.forest.predict_proba(X)[0][1]
-
 
 def calculateMatchupProbabilities(randomForest, season, teams=None):
     probs = {}
@@ -145,17 +143,3 @@ def buildSmartMatchupProbabilities(nModels, nTrees):
     for key in probabilities:
         probabilities[key] /= nModels
     return probabilities
-
-
-# if __name__ == "__main__":
-#     print "building model"
-#     nTreesTests = [10, 25, 50, 100, 200, 400, 800]
-#     bestModel = { "score": 0, "nTrees": 0, "model": None}
-#     for nTrees in nTreesTests:
-#         model = buildModel(nTrees)
-#         modelScore = model.validate()
-#         if bestModel["score"] < modelScore:
-#             bestModel = {"score": modelScore, "nTrees": nTrees, "model": model}
-#     print ("Best performing model:")
-#     print ("Validation Score: %s" % bestModel["score"])
-#     print ("NTrees: %d" % bestModel["nTrees"])

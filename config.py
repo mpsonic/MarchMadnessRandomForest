@@ -3,9 +3,12 @@ from loadTeamData import loadReverseTeamLookup
 teamIds = loadReverseTeamLookup()
 teams = {}
 
+# Edit this variable to change the tournament year to target.
+# The correctly named rating data from that season must be present
+# (data/ratings/massey-ratings-year.tsv)
 year = 2017
 
-# 2017 bracket teams
+# Enter the tournament seedings for the given year
 teams['west'] = ['Gonzaga', 'S Dakota St', 'Northwestern', 'Vanderbilt',
                     'Notre Dame', 'Princeton', 'West Virginia', 'Bucknell',
                     'Maryland', 'Xavier', 'Florida St', 'FL Gulf Coast',

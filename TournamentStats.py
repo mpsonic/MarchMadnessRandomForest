@@ -26,8 +26,9 @@ def runTournamentBracket(model=None):
         'champion': champion
     }
 
+# find list of most likely final 4 (for each region)
+# and the most likely champions
 def calculatePredictionStats(model, iterations):
-    # find list of most likely final 4 (for each region), most likely champion
     westCounts = {}
     eastCounts = {}
     southCounts = {}
@@ -85,6 +86,7 @@ def printTeamProbs(title, probs):
         print ("%s: %f" % (data['team'], data['prob']))
     print "\n"
 
+# Run a tournament simulation and print out the resulting bracket
 def makeRandomBracket(model, winner=None):
     results = None
     if winner is None:

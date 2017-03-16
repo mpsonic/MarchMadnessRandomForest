@@ -9,11 +9,13 @@
     -b, --bracket         Simulate a tournament bracket and print results
     -w WINNER, --winner=WINNER
                         Find a tournament bracket with the given team as
-                        champion. Only use this flag in conjunction with the
-                        --bracket option
+                        champion (team name should be in quotes if it is more
+                        than one word). Only use this flag in conjunction with
+                        the --bracket option
     -p PREDICT, --predict=PREDICT
                         Find the probability that one team wins over the
-                        other. Put the two team names after the flag
+                        other. Put the two team names after the flag (team name
+                        should be in quotes if it is more than one word)
     -m NMODELS, --models=NMODELS
                         Number of random forests to create when calculating
                         matchup probabilities
